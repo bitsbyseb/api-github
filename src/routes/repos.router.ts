@@ -8,9 +8,15 @@ const interval = setInterval(() => {
     service.syncData();
 }, 1_800_000);
 
-router.get('/', (req, res) => {
-    service.getData()
-        .then(x => x !== undefined ? res.status(200).json(x) : '');
+router.get('/', async (req, res,next) => {
+    try {
+        const data = await service.getData();
+        if (data !== undefined) {
+            res.status(200).json(data);
+        }
+    } catch (error) {
+        next(error);
+    }
 });
 
 router.get('/:id', async (req, res,next) => {

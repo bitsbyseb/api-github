@@ -15,7 +15,6 @@ interface ReposData {
 }
 
 const reposUrl = process.env.GITHUB_REPOS_URL;
-
 class ReposService {
 
     async doRequest() {
@@ -26,19 +25,21 @@ class ReposService {
                 return data;
             }
         } catch {
-            throw boom.internal('bad environment config');
+            throw boom.internal();
         }
     }
 
     async getData(): Promise<ReposData | undefined> {
-        const data_path = process.env.DATA_FILE_PATH;
         try {
+            const data_path = process.env.DATA_FILE_PATH;
             if (data_path !== undefined) {
+                const access = await fs.access(path.join(process.cwd(),data_path), fs.constants.F_OK);
                 const content = await fs.readFile(path.join(process.cwd(), data_path));
                 const data: ReposData = JSON.parse(content.toString());
                 return data;
             }
         } catch {
+            await this.syncData();
             throw boom.internal();
         }
     }
@@ -59,10 +60,10 @@ class ReposService {
 
     async getSome(count: number) {
         const data = await this.getData();
-        let objs:JSON[] = [];
+        let objs: JSON[] = [];
         if (data?.repos.length !== undefined) {
             if (data.repos.length < count ?? count < 0) throw boom.badRequest();
-            for (let i = 0; i <= count;i++) {
+            for (let i = 0; i <= count; i++) {
                 objs.push(data.repos[i]);
             }
             return objs;
