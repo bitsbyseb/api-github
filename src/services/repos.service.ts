@@ -1,7 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'path';
 import dotenv from 'dotenv';
+import boom, { Boom } from '@hapi/boom';
 dotenv.config();
+
+/**
+ * TODO:
+ * add support to BoomJS error handler for http
+ * and solve the middleware type error.
+ */
 
 interface ReposData {
     repos: JSON[]
@@ -9,22 +16,30 @@ interface ReposData {
 
 const reposUrl = process.env.GITHUB_REPOS_URL;
 
-class UserService {
+class ReposService {
 
     async doRequest() {
-        if (reposUrl !== undefined) {
-            const response = await fetch(reposUrl);
-            const data = response.json();
-            return data;
+        try {
+            if (reposUrl !== undefined) {
+                const response = await fetch(reposUrl);
+                const data = response.json();
+                return data;
+            }
+        } catch {
+            throw boom.internal('bad environment config');
         }
     }
 
     async getData(): Promise<ReposData | undefined> {
         const data_path = process.env.DATA_FILE_PATH;
-        if (data_path !== undefined) {
-            const content = await fs.readFile(path.join(process.cwd(), data_path));
-            const data: ReposData = JSON.parse(content.toString());
-            return data;
+        try {
+            if (data_path !== undefined) {
+                const content = await fs.readFile(path.join(process.cwd(), data_path));
+                const data: ReposData = JSON.parse(content.toString());
+                return data;
+            }
+        } catch {
+            throw boom.internal();
         }
     }
 
@@ -44,15 +59,15 @@ class UserService {
 
     async getSome(count: number) {
         const data = await this.getData();
-        let objs: JSON[] = [];
-        const repos = data?.repos;
-        if (repos !== undefined) {
-            for (let i = 0; i < count; i++) {
-                objs.push(repos[i]);
+        let objs:JSON[] = [];
+        if (data?.repos.length !== undefined) {
+            if (data.repos.length < count ?? count < 0) throw boom.badRequest();
+            for (let i = 0; i <= count;i++) {
+                objs.push(data.repos[i]);
             }
+            return objs;
         }
-        return objs;
     }
 }
 
-export default UserService;
+export default ReposService;

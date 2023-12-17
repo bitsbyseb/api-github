@@ -13,10 +13,14 @@ router.get('/', (req, res) => {
         .then(x => x !== undefined ? res.status(200).json(x) : '');
 });
 
-router.get('/:id', async (req, res) => {
-    const { id } = req.params;
-    const objsFinded = await service.getSome(Number(id));
-    res.status(200).json(objsFinded);
+router.get('/:id', async (req, res,next) => {
+    try {
+        const { id } = req.params;
+        const objsFinded = await service.getSome(Number(id));
+        res.status(200).json(objsFinded);
+    } catch (error) {
+        next(error);
+    }
 });
 
 export default router;
