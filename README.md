@@ -25,7 +25,7 @@ npm install
 
 create your own .env file with the following structure
 
-```javascript
+```
 GITHUB_REPOS_URL="https://api.github.com/users/<GITHUB_USERNAME>/repos"
 DATA_FILE_PATH="/data.json"
 API_ROOT_URL="/api/v1"

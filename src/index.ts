@@ -16,6 +16,8 @@ app.use(boomErrorHandler);
 app.use(logError);
 app.use(handleError);
 
-app.listen(3000,()=> {
+const PORT = process.env.PORT ?? 1234;
+
+app.listen(PORT,()=> {
     console.log("running on http://localhost:"+3000);
 });
